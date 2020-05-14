@@ -75,4 +75,5 @@ sns.boxplot(x='OverallQual',y='SalePrice',data=price_qual)
 plt.grid()
 plt.show()
 
+# 4.数据处理
 
