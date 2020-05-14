@@ -2,7 +2,7 @@
 
 # 所需的工具包放在最前边
 import pandas as pd
-import seaborn as sns  # 画热力图要用
+import seaborn as sns  # 画热力图、箱线图等
 import matplotlib.pyplot as plt
 
 # 1.先查看一下数据的格式
@@ -76,4 +76,23 @@ plt.grid()
 plt.show()
 
 # 4.数据处理
-
+# 4.1 异常值
+# 以居住面积为例
+trainData_exceptID = trainData_exceptID.drop(trainData_exceptID[(gArea>4000) & (salePrice<300000)].index)
+# 重新画一下图
+plt.scatter(trainData_exceptID['GrLivArea'],trainData_exceptID['SalePrice'])
+plt.xlabel('GrLivArea')
+plt.ylabel('SalePrice')
+plt.grid()
+plt.show()
+# 4.2 缺失值
+# 根据上边缺失率的计算，PoolQC、MiscFeature、Alley的缺失值都在90%以上，可以考虑直接删掉这些特征
+all_data = all_data.drop(['PoolQC'],axis=1)
+all_data = all_data.drop(['MiscFeature'],axis=1)
+all_data = all_data.drop(['Alley'],axis=1)
+print(all_data.shape)
+# 缺失率排名第4和第5的是Fence(栅栏)、FireplaceQu(壁炉):缺失可能代表没有，用none填充
+all_data['Fence'] = all_data['Fence'].fillna('None')
+all_data['FireplaceQu'] = all_data['FireplaceQu'].fillna('None')
+# 缺失率排名第6的是LotFrontage(房屋前街道的长度):考虑用均值填充缺失值
+all_data['LotFrontage'] = all_data.groupby('Neighborhood')["LotFrontage"].transform(lambda x: x.fillna(x.median()))
