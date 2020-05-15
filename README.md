@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 from scipy import stats
 from scipy.stats import norm,skew
 import numpy as np
+from sklearn.preprocessing import LabelEncoder
 
 # 1.先查看一下数据的格式
 trainData = pd.read_csv('train.csv')
@@ -267,21 +268,13 @@ OK可以了！！！
  通常，概率图也可以用于确定一组数据是否服从任一已知分布，如二项分布或泊松分布。概率图展示的是样本的累积频率分布与理论正态分布的累积概率分布之间的关系。如果图中各点为直线或接近直线，则样本的正态分布假设可以接受。<br>
  同理,任意两个数据集都可以通过比较来判断是否服从同一分布。计算每个分布的分位数。一个数据集对应x轴，另一个对应y轴。做一条45度参考线，如果两个数据集数据来自同一分布，则这些点会落在参照线附近。<br>
  
- （5）异方差性检验：法1：比例位置图（残差的标准差/估计值图(Scale Location Plot)）。显示了残差如何沿着预测变量的范围传播。<br>
- 法2：残差（Residual）/估计值（Fitted Value，Y^）图。若该图呈现如上图所示的“漏斗形”，即随着Y^的变化，残差有规律的变大或变小，则说明存在明显的异方差性。<br>
+ （5）异方差性检验：法1：比例位置图（残差的标准差/估计值图(Scale Location Plot)）。显示了残差如何沿着预测变量的范围传播。法2：残差（Residual）/估计值（Fitted Value，Y^）图。若该图呈现如上图所示的“漏斗形”，即随着Y^的变化，残差有规律的变大或变小，则说明存在明显的异方差性。<br>
  
  ### 2.检验
- 先来检验一下房价是否符合正态分布：<br>
- ```python
- # 5.回归分析
-# 5.1 检验数据是否符合正态分布
-print(stats.shapiro(trainData_exceptID['SalePrice']))
-```
-结果：(0.8697617053985596, 3.425927592277678e-33) 第二个数为P值,大于0.05，不拒绝原假设，即认为数据服从正态分布
-
-可视化看一看更直观：<br>
+ 先来检验一下房价是否符合正态分布：可视化更直观哦<br>
 ```python
-# 再可视化看看
+# 5.回归分析
+# 5.1 检验数据是否符合正态分布(可视化更直观哦)
 sns.distplot(trainData_exceptID['SalePrice'],fit=norm)  # 拟合正态分布曲线
 (mu,sigma) = norm.fit(trainData_exceptID['SalePrice']) # 计算均值，方差
 print('\n mu={:.2f} and sigma={:.2f} \n'.format(mu,sigma))
@@ -331,5 +324,56 @@ plt.show()
 看起来已经可以了哈，转化成功！
  ***
  ### 3.特征工程 
-建模前做足准备
+#### （1）先对离散型变量进行编码处理:Label Encoding、One-Hot Encoding
+```python
+# 6.特征工程
+# 6.1 单个特征的处理（主要针对离散型变量）
+cols = ('FireplaceQu', 'BsmtQual', 'BsmtCond', 'GarageQual', 'GarageCond',
+        'ExterQual', 'ExterCond','HeatingQC', 'KitchenQual', 'BsmtFinType1',
+        'BsmtFinType2', 'Functional', 'BsmtExposure', 'GarageFinish', 'LandSlope',
+        'LotShape', 'PavedDrive', 'Street', 'CentralAir', 'MSSubClass', 'OverallCond',
+        'YrSold', 'MoSold')            # 使用Label Encoding处理这些特征（有序的离散特征）
+for k in cols:
+    LE1 = LabelEncoder()
+    LE1.fit(list(all_data[k].values))  # 将每一列特征的值作为一个列表塞进编码字典中进行编码
+    all_data[k] = LE1.transform(list(all_data[k].values))  # 将每一列特征的值转化为编码字典中的索引，对应fit就能知道每一个值编码后的结果
+print("all_data's shape:{}".format(all_data.shape))
+```
+结果：all_data's shape:(2919, 75)<br>
+之前删除了5列：Id、SalePrice、Utilities、PoolQC、MiscFeature、Alley
+```python
+all_data = pd.get_dummies(all_data)    # get_dummies是pandas中独热编码的方法,处理剩下的离散特征
+# 独热编码会增加特征维度
+print(all_data.shape)
+print(all_data.head())
+```
+结果：(2919, 320)
+
+ 1stFlrSF  2ndFlrSF     ...       SaleType_Oth  SaleType_WD
+0       856       854     ...                  0            1
+1      1262         0     ...                  0            1
+2       920       866     ...                  0            1
+3       961       756     ...                  0            1
+4      1145      1053     ...                  0            1
+[5 rows x 320 columns]
+
+暂且看不全，截点图来看看（确实全部变成数字了）：
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20200515194852725.png)
+![在这里插入图片描述](https://img-blog.csdnimg.cn/202005151949134.png)
+
+#### （2）特征抽取
+```python
+# 6.2 特征抽取（新增特征）
+# 新增“房屋总面积列”：地下室面积 + 1楼面积 + 2楼面积 = 房屋总面积
+all_data['TotalSF'] = all_data['TotalBsmtSF'] + all_data['1stFlrSF'] + all_data['2ndFlrSF']
+# 建造时间比较近的房子房价比较高，所以新创造一个01特征，如果房屋建造时间在1990年后，则为1，否则是0
+all_data['YearBuilt_cut'] = all_data['YearBuilt'].apply(lambda x:1 if x>1990 else 0)
+print(all_data.shape)
+```
+结果：(2919, 322)<br>
+看一下截图，确实增加了两列哈：<br>
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20200515195903190.png)
+
+
  
