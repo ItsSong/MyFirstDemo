@@ -241,7 +241,7 @@ print(missing_data1.head(10))
 
 OK可以了！！！
 ***
- - **二、回归分析**
+ - **二、特征工程**
  ### 1.回归分析的假设
  （1）自变量X与因变量Y间关系：线性、可加性（Y=b+a1X1+a2X2+...+ϵ）<br> 
  线性：X每变动一个单位，Y相应的发生固定单位的变动，与X的绝对数值无关<br>
@@ -270,7 +270,7 @@ OK可以了！！！
  
  （5）异方差性检验：法1：比例位置图（残差的标准差/估计值图(Scale Location Plot)）。显示了残差如何沿着预测变量的范围传播。法2：残差（Residual）/估计值（Fitted Value，Y^）图。若该图呈现如上图所示的“漏斗形”，即随着Y^的变化，残差有规律的变大或变小，则说明存在明显的异方差性。<br>
  
- ### 2.检验
+ ### 2.检验数据是否满足假设条件
  先来检验一下房价是否符合正态分布：可视化更直观哦<br>
 ```python
 # 5.回归分析
@@ -323,8 +323,7 @@ plt.show()
 
 看起来已经可以了哈，转化成功！
  ***
- ### 3.特征工程 
-#### （1）先对离散型变量进行编码处理:Label Encoding、One-Hot Encoding
+ ### 3.对离散型变量进行编码处理:Label Encoding、One-Hot Encoding
 ```python
 # 6.特征工程
 # 6.1 单个特征的处理（主要针对离散型变量）
@@ -362,7 +361,7 @@ print(all_data.head())
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200515194852725.png)
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/202005151949134.png)
 
-#### （2）特征抽取
+### 4.特征抽取
 ```python
 # 6.2 特征抽取（新增特征）
 # 新增“房屋总面积列”：地下室面积 + 1楼面积 + 2楼面积 = 房屋总面积
@@ -375,7 +374,7 @@ print(all_data.shape)
 看一下截图，确实增加了两列哈：<br>
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200515195903190.png)
 
-#### （3）特征筛选
+### 5.特征筛选
 ```python
 # 6.3 特征筛选
 # 为避免多重共线性，剔除掉相关系数>0.9的特征（皮尔逊相关系数）
@@ -385,13 +384,7 @@ corr_matrix = all_data.corr().abs()
 print(corr_matrix.head())
 ```
 结果：<br>
-              1stFlrSF  2ndFlrSF      ...         TotalSF  YearBuilt_cut
-1stFlrSF      1.000000  0.249823      ...        0.793379       0.237462
-2ndFlrSF      0.249823  1.000000      ...        0.298512       0.203171
-3SsnPorch     0.044086  0.032458      ...        0.024988       0.010986
-BedroomAbvGr  0.108418  0.503506      ...        0.350625       0.039398
-BsmtCond      0.040297  0.016495      ...        0.106404       0.116658
-[5 rows x 322 columns]
+![在这里插入图片描述](https://img-blog.csdnimg.cn/202005152114061.png)
 
 ```python
 # 只选择矩阵上半部分(对称)
@@ -402,13 +395,7 @@ upper = corr_matrix.where(np.triu(np.ones(corr_matrix.shape),k=1).astype(np.bool
 print(upper.head())
 ```
 结果：<br>
-              1stFlrSF  2ndFlrSF      ...         TotalSF  YearBuilt_cut
-1stFlrSF           NaN  0.249823      ...        0.793379       0.237462
-2ndFlrSF           NaN       NaN      ...        0.298512       0.203171
-3SsnPorch          NaN       NaN      ...        0.024988       0.010986
-BedroomAbvGr       NaN       NaN      ...        0.350625       0.039398
-BsmtCond           NaN       NaN      ...        0.106404       0.116658
-[5 rows x 322 columns]
+![](https://img-blog.csdnimg.cn/20200515211328224.png)
 
 ```python
 # 删除掉相关系数>0.9的特征
@@ -431,3 +418,4 @@ testData = all_data[n_trainData:]
 ```
 OK，可以进行建模了！！！
  
+ - **三、建模**
