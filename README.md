@@ -155,7 +155,7 @@ plt.show()
 ```
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/2020051422201530.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0Ffemh1b18=,size_16,color_FFFFFF,t_70)
 
-异常值已经剔除了。对于车库面积也可进行同样的操作。
+异常值已经剔除了。对于车库面积也可进行同样的操作。接下来对缺失值进行操作。
 ```python
 # 4.2 缺失值
 # 根据上边缺失率的计算，PoolQC、MiscFeature、Alley的缺失值都在90%以上，可以考虑直接删掉这些特征
@@ -177,3 +177,4 @@ all_data['FireplaceQu'] = all_data['FireplaceQu'].fillna('None')
 all_data['LotFrontage'] = all_data.groupby('Neighborhood')["LotFrontage"].transform(lambda x: x.fillna(x.median()))
 
 ```
+
