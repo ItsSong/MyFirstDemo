@@ -208,4 +208,30 @@ all_data["MasVnrType"] = all_data["MasVnrType"].fillna("None")
 all_data["MasVnrArea"] = all_data["MasVnrArea"].fillna(0)
 ```
 
+```python
+# 接下来是MSZoning(标识销售区域划分类别)，考虑使用众数填补缺失值
+# print(all_data['MSZoning'].mode())    # mode函数求众数，显示第一个值为众数，第二个值为众数的数据类型
+all_data['MSZoning'] = all_data['MSZoning'].fillna(all_data['MSZoning'].mode()[0])
+```
+
+```python
+# 继续往下走(I'm tired hahaha)
+all_data = all_data.drop(['Utilities'],axis=1)
+all_data['Functional'] = all_data['Functional'].fillna(all_data['Functional'].mode()[0])
+all_data['Electrical'] = all_data['Electrical'].fillna(all_data['Electrical'].mode()[0])
+all_data['Exterior1st'] = all_data['Exterior1st'].fillna(all_data['Exterior1st'].mode()[0])
+all_data['Exterior2nd'] = all_data['Exterior2nd'].fillna(all_data['Exterior2nd'].mode()[0])
+all_data['KitchenQual'] = all_data['KitchenQual'].fillna(all_data['KitchenQual'].mode()[0])
+all_data['SaleType'] = all_data['SaleType'].fillna(all_data['SaleType'].mode()[0])
+```
+
+现在来看看缺失情况是否好转了：<br>
+```python
+all_data_na1 = (all_data.isnull().sum()/len(all_data))*100
+all_data_na1 = all_data_na1.drop(all_data_na1[all_data_na1==0].index).sort_values(ascending=False) # 剔除掉缺失率为0的特征索引
+missing_data1 = pd.DataFrame({'MissingData1':all_data_na1})
+print(missing_data1.head(10))
+```
+![image](E:\找工作\1数据分析\0_艾伦数据分析学习\数据挖掘入门项目案例\1589512239.jpg)
+
 
