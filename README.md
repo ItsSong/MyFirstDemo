@@ -178,3 +178,34 @@ all_data['LotFrontage'] = all_data.groupby('Neighborhood')["LotFrontage"].transf
 
 ```
 
+```python
+# 缺失率排名第7、8、9、10、11（缺失率完全相等）：GarageQual（车库质量）、GarageCond（车库条件）、GarageFinish（车库内部装修）、GarageType（车库位置）
+# 考虑同时缺失的情况：房子应该没有车库，用None填充缺失值
+for i in ('GarageQual','GarageCond','GarageFinish','GarageType'):
+    all_data[i] = all_data[i].fillna('None')
+```
+```python
+# 同理，接下来是车库相关的数值型/连续型变量，用0填充(如GarageYrBlt车库建成时间)
+for col in ('GarageYrBlt', 'GarageArea', 'GarageCars'):
+    all_data[col] = all_data[col].fillna(0)
+```
+
+```python
+# 地下室相关变量缺失率相同，可能因为没有地下室，用0填充
+for j in ('BsmtFinSF1', 'BsmtFinSF2', 'BsmtUnfSF','TotalBsmtSF', 'BsmtFullBath', 'BsmtHalfBath'):
+    all_data[j] = all_data[j].fillna(0)
+```
+
+```python
+# 地下室相关离散变量，同理用None填充
+for col in ('BsmtQual', 'BsmtCond', 'BsmtExposure', 'BsmtFinType1', 'BsmtFinType2'):
+    all_data[col] = all_data[col].fillna('None')
+```
+
+```python
+# Mas为砖石结构相关变量，缺失值我们同样认为是没有砖石结构，用0和none填补缺失值
+all_data["MasVnrType"] = all_data["MasVnrType"].fillna("None")
+all_data["MasVnrArea"] = all_data["MasVnrArea"].fillna(0)
+```
+
+
