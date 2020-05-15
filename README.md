@@ -375,5 +375,59 @@ print(all_data.shape)
 看一下截图，确实增加了两列哈：<br>
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200515195903190.png)
 
+#### （3）特征筛选
+```python
+# 6.3 特征筛选
+# 为避免多重共线性，剔除掉相关系数>0.9的特征（皮尔逊相关系数）
+threshold = 0.9
+# 相关系数矩阵
+corr_matrix = all_data.corr().abs()
+print(corr_matrix.head())
+```
+结果：<br>
+              1stFlrSF  2ndFlrSF      ...         TotalSF  YearBuilt_cut
+1stFlrSF      1.000000  0.249823      ...        0.793379       0.237462
+2ndFlrSF      0.249823  1.000000      ...        0.298512       0.203171
+3SsnPorch     0.044086  0.032458      ...        0.024988       0.010986
+BedroomAbvGr  0.108418  0.503506      ...        0.350625       0.039398
+BsmtCond      0.040297  0.016495      ...        0.106404       0.116658
+[5 rows x 322 columns]
 
+```python
+# 只选择矩阵上半部分(对称)
+upper = corr_matrix.where(np.triu(np.ones(corr_matrix.shape),k=1).astype(np.bool))
+# where()第一种用法：where(conditions, x, y)，conditions为真，返回x,否则y
+# where()第二种用法：where(conditions)，直接返回conditions为真的数组下标
+# np.triu()获取上三角矩阵，k表示对角线起始位置
+print(upper.head())
+```
+结果：<br>
+              1stFlrSF  2ndFlrSF      ...         TotalSF  YearBuilt_cut
+1stFlrSF           NaN  0.249823      ...        0.793379       0.237462
+2ndFlrSF           NaN       NaN      ...        0.298512       0.203171
+3SsnPorch          NaN       NaN      ...        0.024988       0.010986
+BedroomAbvGr       NaN       NaN      ...        0.350625       0.039398
+BsmtCond           NaN       NaN      ...        0.106404       0.116658
+[5 rows x 322 columns]
+
+```python
+# 删除掉相关系数>0.9的特征
+to_drop = [column for column in upper.columns if any(upper[column] > threshold)]
+print('There are %s columns to remove.'%(len(to_drop)))
+all_data = all_data.drop(columns=to_drop)
+print(all_data.shape)
+```
+结果：<br>
+There are 6 columns to remove.<br>
+(2919, 316)
+
+到这里就处理完了！
+
+之前将训练集和测试集合并到一块进行处理，现在将其分开：<br>
+```python
+# 6.4 又将训练集和测试集分开来
+trainData = all_data[:n_trainData]
+testData = all_data[n_trainData:]
+```
+OK，可以进行建模了！！！
  
