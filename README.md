@@ -269,7 +269,7 @@ OK可以了！！！
  同理,任意两个数据集都可以通过比较来判断是否服从同一分布。计算每个分布的分位数。一个数据集对应x轴，另一个对应y轴。做一条45度参考线，如果两个数据集数据来自同一分布，则这些点会落在参照线附近。<br>
  
  （5）异方差性检验：法1：比例位置图（残差的标准差/估计值图(Scale Location Plot)）。显示了残差如何沿着预测变量的范围传播。法2：残差（Residual）/估计值（Fitted Value，Y^）图。若该图呈现如上图所示的“漏斗形”，即随着Y^的变化，残差有规律的变大或变小，则说明存在明显的异方差性。<br>
- 
+
  ### 2.检验数据是否满足假设条件
  先来检验一下房价是否符合正态分布：可视化更直观哦<br>
 ```python
@@ -360,7 +360,7 @@ print(all_data.head())
 
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200515194852725.png)
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/202005151949134.png)
-
+***
 ### 4.特征抽取
 ```python
 # 6.2 特征抽取（新增特征）
@@ -373,7 +373,7 @@ print(all_data.shape)
 结果：(2919, 322)<br>
 看一下截图，确实增加了两列哈：<br>
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200515195903190.png)
-
+***
 ### 5.特征筛选
 ```python
 # 6.3 特征筛选
@@ -417,5 +417,57 @@ trainData = all_data[:n_trainData]
 testData = all_data[n_trainData:]
 ```
 OK，可以进行建模了！！！
- 
+ ***
  - **三、建模**
+话不多说，直接上代码hhh
+```python
+# 7. 建模------------------------------------------------------------------------
+from sklearn.linear_model import Ridge,RidgeCV,ElasticNet,LassoCV,LassoLarsCV
+from sklearn.model_selection import cross_val_score
+# 7.1 k折交叉验证，验证模型准确率或泛化误差
+n_folds = 5 # 设置5折交叉
+def rmsle_cv(model):
+    rmse = np.sqrt(-cross_val_score(model, trainData, y_train, scoring='neg_mean_squared_error', cv=n_folds)) # scoring表示评分形式，这里使用均方误差
+    return rmse  # 返回的是评分
+# 导入岭回归模型
+model_ridge = Ridge()
+alphas = [0.05, 0.1, 0.3, 1, 3, 5, 10, 15, 30, 50, 75] # 参数alphas，控制正则项的强弱（防止过拟合和欠拟合）
+# 每调节一次alphas，计算一次模型误差的均值（5折交叉验证）
+cv_ridge = [rmsle_cv(Ridge(alpha=alpha)).mean()
+            for alpha in alphas]
+# 可视化看看模型误差
+cv_ridge = pd.Series(cv_ridge, index=alphas)  # 将原本是列表的cv_ridge转化为数组形式展现，索引是alphas
+cv_ridge.plot(title='Validation Score')
+plt.xlabel("alpha")
+plt.ylabel("rmse")
+plt.grid()
+plt.show()
+```
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20200515230822663.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0Ffemh1b18=,size_16,color_FFFFFF,t_70)
+
+再看看具体的误差值：
+```python
+print(cv_ridge)
+```
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20200515231217616.png)
+
+很明显，alpha=15时，模型误差最小，OK，我们使用alpha=15拟合模型吧：
+```python
+# 7.3 拟合模型
+clf = Ridge(alpha=15)
+clf.fit(trainData,y_train)
+```
+![在这里插入图片描述](https://img-blog.csdnimg.cn/202005152317502.png)
+
+可以进行预测了：
+```python
+# 7.4 预测
+predict = clf.predict(testData)
+testData1 = testData  # 打算将预测结果存进一个新表中testData1
+testData1['SalePrice_Predict'] = predict
+print(testData1.head())
+```
+结果：<br>
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20200515233807884.png)
+
+预测结束！
