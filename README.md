@@ -232,6 +232,6 @@ all_data_na1 = all_data_na1.drop(all_data_na1[all_data_na1==0].index).sort_value
 missing_data1 = pd.DataFrame({'MissingData1':all_data_na1})
 print(missing_data1.head(10))
 ```
-![image](E:\找工作\1数据分析\0_艾伦数据分析学习\数据挖掘入门项目案例\1589512239.jpg)
+![image](E:/找工作/1数据分析/0_艾伦数据分析学习/数据挖掘入门项目案例/1589512239.jpg)
 
 
