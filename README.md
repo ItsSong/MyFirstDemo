@@ -12,6 +12,9 @@
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+from scipy import stats
+from scipy.stats import norm,skew
+import numpy as np
 
 # 1.先查看一下数据的格式
 trainData = pd.read_csv('train.csv')
@@ -240,8 +243,8 @@ OK可以了！！！
  - **二、回归分析**
  ### 1.回归分析的假设
  （1）自变量X与因变量Y间关系：线性、可加性（Y=b+a1X1+a2X2+...+ϵ）<br> 
- 线性：X每变动一个单位，Y相应的发生固定单位的变动，与X的绝对数值无关<br>  
- 可加性：X对Y的影响是独立的，如各个自变量如x1、x2...，x1对Y的影响独立于x2<br>  
+ 线性：X每变动一个单位，Y相应的发生固定单位的变动，与X的绝对数值无关<br>
+ 可加性：X对Y的影响是独立的，如各个自变量如x1、x2...，x1对Y的影响独立于x2<br>
  线性与可加性：如果将线性模型拟合到非线性、非叠加的数据集上，回归算法将无法从数学上捕获数据集中的趋势，从而导致模型无效。在未知的数据集上进行预测，也将导致预测错误。<br>
  
  （2）各自变量间不相关，否则为多重性线性。如果出现多重共线性，那我们就很难得知自变量与因变量之间真正的关系了。当多重共线性性出现的时候，变量之间的联动关系会导致测得的标准差偏大，置信区间变宽。采用岭回归，Lasso回归可以一定程度上减少方差，解决多重共线性性问题。因为这些方法，在最小二乘法的基础上，加入了一个与回归系数的模有关的惩罚项，可以收缩模型的系数。<br>  
@@ -249,16 +252,84 @@ OK可以了！！！
  （3）残差服从正态分布；残差项之间不相关（否则称之为自相关）；且方差恒定，即同方差性（否则称之为异方差性）
  
  检验方法：<br>
+ 
  （1）线性&可加性检验：观察残差（Residual）-估计值（Fitted Value，Y^）图<br>
  如果图中有任何模式，比如可能出现抛物线形状，需要考虑数据中的非线性迹象。这表明模型无法捕捉到非线性效应。解决方法：可以做一个非线性变换例如log(x)，√X 或X²变换<br>
  如果图中呈现漏斗形状，则是非常量方差的迹象，即异方差性。解决方法：变换响应变量，例如log(Y)或√Y。此外，还可以采用加权最小二乘法解决异方差性问题。<br>
+ 
  （2）自相关性检验：计算杜宾-瓦特森统计量（Durbin-Watson Statistic）<br>
- ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200515121911787.png)
+ ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200515121911787.png)<br>
  DW=2：没有自相关性；0<DW<2：残差间有正的相关性；2<DW<4：残差间有负的相关性；<br>
+ 
  （3）多重共线性检验：首先，可以通过观察自变量的散点图（Scatter Plot）来进行初步判断。然后，针对可能存在多重共线性性的变量，我们观察其方差膨胀系数（VIF–Variance Inflation Factor）。若VIF<3，说明该变量基本不存在多重共线性性问题，若VIF>10，说明问题比较严重。<br>
- （4）正态分布检验：正态QQ图（分位数—分位数图，本质是一个散点图）。如果服从正态分布，则Q-Q图呈现出一条直线。若直线出现偏差时，误差不服从正态分布。如果误差不是正态分布的，那么变量（响应或预测变量）的非线性变换可以改善模型。<br>
- （5）异方差性检验：法1：比例位置图（残差的标准差/估计值图(Scale Location Plot)）。显示了残差如何沿着预测变量的范围传播。（<br>
+ 
+ （4）正态分布检验：正态QQ图（Quantile-Quantile Plot，即分位数-分位数图，本质是散点图，可以理解为样本和理论分位数的差异）。如果服从正态分布，则Q-Q图呈现出一条直线。若直线出现偏差时，误差不服从正态分布。如果误差不是正态分布的，那么变量（响应或预测变量）的非线性变换可以改善模型。<br>
+ 通常，概率图也可以用于确定一组数据是否服从任一已知分布，如二项分布或泊松分布。概率图展示的是样本的累积频率分布与理论正态分布的累积概率分布之间的关系。如果图中各点为直线或接近直线，则样本的正态分布假设可以接受。<br>
+ 同理,任意两个数据集都可以通过比较来判断是否服从同一分布。计算每个分布的分位数。一个数据集对应x轴，另一个对应y轴。做一条45度参考线，如果两个数据集数据来自同一分布，则这些点会落在参照线附近。<br>
+ 
+ （5）异方差性检验：法1：比例位置图（残差的标准差/估计值图(Scale Location Plot)）。显示了残差如何沿着预测变量的范围传播。<br>
  法2：残差（Residual）/估计值（Fitted Value，Y^）图。若该图呈现如上图所示的“漏斗形”，即随着Y^的变化，残差有规律的变大或变小，则说明存在明显的异方差性。<br>
  
- 
+ ### 2.检验
+ 先来检验一下房价是否符合正态分布：<br>
+ ```python
+ # 5.回归分析
+# 5.1 检验数据是否符合正态分布
+print(stats.shapiro(trainData_exceptID['SalePrice']))
+```
+结果：(0.8697617053985596, 3.425927592277678e-33) 第二个数为P值,大于0.05，不拒绝原假设，即认为数据服从正态分布
+
+可视化看一看更直观：<br>
+```python
+# 再可视化看看
+sns.distplot(trainData_exceptID['SalePrice'],fit=norm)  # 拟合正态分布曲线
+(mu,sigma) = norm.fit(trainData_exceptID['SalePrice']) # 计算均值，方差
+print('\n mu={:.2f} and sigma={:.2f} \n'.format(mu,sigma))
+```
+结果：mu=180932.92 and sigma=79467.79 <br>
+```python
+plt.legend(['Normal dist. ($\mu=${:.2f} and $\sigma=${:.2f}'.format(mu,sigma)],loc='best')
+plt.ylabel('Frequency')
+plt.title('SalePrice Distribution')
+plt.grid()
+plt.show()
+```
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20200515151926576.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0Ffemh1b18=,size_16,color_FFFFFF,t_70)
+
+```python
+fig2 = plt.figure()
+result = stats.probplot(trainData_exceptID['SalePrice'],plot=plt) #概率图：概率以理论分布的比例（x轴）显示，y轴包含样本数据的未缩放分位数
+plt.show()
+```
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20200515151952912.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0Ffemh1b18=,size_16,color_FFFFFF,t_70)
+
+可以看出房价数据呈现右偏分布，需要进行一定的操作转化为正态分布（对数、倒数、平方根、平方根反正弦、Box-Cox等）。这里使用对数变换：
+```python
+# 5.2 将非正态转化为正态分布（使用对数变换）
+trainData_exceptID['SalePrice'] = np.log1p(trainData_exceptID['SalePrice'])  # 取对数：log1p = log（x+1）
+# 再来看看分布情况
+sns.distplot(trainData_exceptID['SalePrice'],fit=norm)
+(mu,sigma) = norm.fit(trainData_exceptID['SalePrice'])
+print('\n mu={:.2f} and sigma={:.2f} \n'.format(mu,sigma))
+plt.legend(['Normal distri.($\mu=${:.2f} and $\sigma=${:.2f}'.format(mu,sigma)],loc='best')
+plt.ylabel('Frequency')
+plt.title('SalePrice Distribution After Transform')
+plt.grid()
+plt.show()
+```
+ mu=12.02 and sigma=0.40<br>
+ ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200515162128766.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0Ffemh1b18=,size_16,color_FFFFFF,t_70)
+ ```python
+ # 再画个probplot概率图
+fig3 = plt.figure()
+result_afterT = stats.probplot(trainData_exceptID['SalePrice'],plot=plt)
+plt.grid()
+plt.show()
+```
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20200515162435158.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0Ffemh1b18=,size_16,color_FFFFFF,t_70)
+
+看起来已经可以了哈，转化成功！
+ ***
+ ### 3.特征工程 
+建模前做足准备
  
