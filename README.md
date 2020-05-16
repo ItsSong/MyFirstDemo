@@ -1,7 +1,6 @@
-# MyFirstDemo
-## 数据分析入门项目
+# 数据分析入门项目
 ***
- - **一、数据可视化探索**
+## 一、数据可视化探索
 
 1. 探索数据质量（缺失值、异常值等）
 2. 探索特征与预测变量之间的相关性
@@ -104,7 +103,8 @@ plt.grid()
 plt.show()
 ```
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200514161722307.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0Ffemh1b18=,size_16,color_FFFFFF,t_70)
-    可以用箱线图展示（见下文）
+
+可以用箱线图展示（见下文）
 ```python
 # 3.2.2 SalePrice随GrLivArea（居住面积）变化的散点图
 gArea = trainData_exceptID['GrLivArea']
@@ -132,7 +132,6 @@ plt.show()
 随着车库面积的增大，房价越高。同时似乎也存在异常值。   
 接下来画离散变量的箱线图：
  
-
 ```python
 # 3.2.4 SalePrice随OverallQual变化，每一个特征按照箱线图展示
 price_qual = pd.concat([trainData_exceptID['SalePrice'],trainData_exceptID['OverallQual']],axis=1) # axis=1按照列维度拼接，行数不变
@@ -241,7 +240,7 @@ print(missing_data1.head(10))
 
 OK可以了！！！
 ***
- - **二、特征工程**
+## 二、特征工程
  ### 1.回归分析的假设
  #### （1）自变量X与因变量Y间关系：线性、可加性（Y=b+a1X1+a2X2+...+ϵ）<br> 
  线性：X每变动一个单位，Y相应的发生固定单位的变动，与X的绝对数值无关<br>
@@ -253,25 +252,28 @@ OK可以了！！！
  
  #### （3）残差服从正态分布；残差项之间不相关（否则称之为自相关）；且方差恒定，即同方差性（否则称之为异方差性）
  
- #### 检验方法：<br>
+ ### 2.检验方法：<br>
  
- （1）线性&可加性检验：观察残差（Residual）-估计值（Fitted Value，Y^）图<br>
+ #### （1）线性&可加性检验：观察残差（Residual）-估计值（Fitted Value，Y^）图<br>
  如果图中有任何模式，比如可能出现抛物线形状，需要考虑数据中的非线性迹象。这表明模型无法捕捉到非线性效应。解决方法：可以做一个非线性变换例如log(x)，√X 或X²变换<br>
  如果图中呈现漏斗形状，则是非常量方差的迹象，即异方差性。解决方法：变换响应变量，例如log(Y)或√Y。此外，还可以采用加权最小二乘法解决异方差性问题。<br>
  
- （2）自相关性检验：计算杜宾-瓦特森统计量（Durbin-Watson Statistic）<br>
+ #### （2）自相关性检验：计算杜宾-瓦特森统计量（Durbin-Watson Statistic）<br>
  ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200515121911787.png)<br>
  DW=2：没有自相关性；0<DW<2：残差间有正的相关性；2<DW<4：残差间有负的相关性；<br>
  
- （3）多重共线性检验：首先，可以通过观察自变量的散点图（Scatter Plot）来进行初步判断。然后，针对可能存在多重共线性性的变量，我们观察其方差膨胀系数（VIF–Variance Inflation Factor）。若VIF<3，说明该变量基本不存在多重共线性性问题，若VIF>10，说明问题比较严重。<br>
+ #### （3）多重共线性检验：散点图（Scatter Plot）、方差膨胀系数（VIF–Variance Inflation Factor）<br>
+ 首先，可以通过观察自变量的散点图（Scatter Plot）来进行初步判断。然后，针对可能存在多重共线性性的变量，我们观察其方差膨胀系数（VIF–Variance Inflation Factor）。若VIF<3，说明该变量基本不存在多重共线性性问题，若VIF>10，说明问题比较严重。<br>
  
- （4）正态分布检验：正态QQ图（Quantile-Quantile Plot，即分位数-分位数图，本质是散点图，可以理解为样本和理论分位数的差异）。如果服从正态分布，则Q-Q图呈现出一条直线。若直线出现偏差时，误差不服从正态分布。如果误差不是正态分布的，那么变量（响应或预测变量）的非线性变换可以改善模型。<br>
+ #### （4）正态分布检验：正态QQ图（Quantile-Quantile Plot，即分位数-分位数图，本质是散点图，可以理解为样本和理论分位数的差异）<br>
+ 如果服从正态分布，则Q-Q图呈现出一条直线。若直线出现偏差时，误差不服从正态分布。如果误差不是正态分布的，那么变量（响应或预测变量）的非线性变换可以改善模型。<br>
  通常，概率图也可以用于确定一组数据是否服从任一已知分布，如二项分布或泊松分布。概率图展示的是样本的累积频率分布与理论正态分布的累积概率分布之间的关系。如果图中各点为直线或接近直线，则样本的正态分布假设可以接受。<br>
  同理,任意两个数据集都可以通过比较来判断是否服从同一分布。计算每个分布的分位数。一个数据集对应x轴，另一个对应y轴。做一条45度参考线，如果两个数据集数据来自同一分布，则这些点会落在参照线附近。<br>
  
- （5）异方差性检验：法1：比例位置图（残差的标准差/估计值图(Scale Location Plot)）。显示了残差如何沿着预测变量的范围传播。法2：残差（Residual）/估计值（Fitted Value，Y^）图。若该图呈现如上图所示的“漏斗形”，即随着Y^的变化，残差有规律的变大或变小，则说明存在明显的异方差性。<br>
+ #### （5）异方差性检验：比例位置图、残差图<br>
+ 法1：比例位置图（残差的标准差/估计值图(Scale Location Plot)）。显示了残差如何沿着预测变量的范围传播。法2：残差（Residual）/估计值（Fitted Value，Y^）图。若该图呈现如上图所示的“漏斗形”，即随着Y^的变化，残差有规律的变大或变小，则说明存在明显的异方差性。<br>
 
- ### 2.检验数据是否满足假设条件
+ ### 3.检验数据是否满足假设条件
  先来检验一下房价是否符合正态分布：可视化更直观哦<br>
 ```python
 # 5.回归分析
@@ -324,7 +326,7 @@ plt.show()
 
 看起来已经可以了哈，转化成功！
  ***
- ### 3.对离散型变量进行编码处理:Label Encoding、One-Hot Encoding
+ ### 4.对离散型变量进行编码处理:Label Encoding、One-Hot Encoding
 ```python
 # 6.特征工程
 # 6.1 单个特征的处理（主要针对离散型变量）
@@ -356,7 +358,7 @@ print(all_data.head())
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200515194852725.png)
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/202005151949134.png)
 ***
-### 4.特征抽取
+### 5.特征抽取
 ```python
 # 6.2 特征抽取（新增特征）
 # 新增“房屋总面积列”：地下室面积 + 1楼面积 + 2楼面积 = 房屋总面积
@@ -369,7 +371,7 @@ print(all_data.shape)
 看一下截图，确实增加了两列哈：<br>
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200515195903190.png)
 ***
-### 5.特征筛选
+### 6.特征筛选
 ```python
 # 6.3 特征筛选
 # 为避免多重共线性，剔除掉相关系数>0.9的特征（皮尔逊相关系数）
@@ -413,7 +415,7 @@ testData = all_data[n_trainData:]
 ```
 OK，可以进行建模了！！！
  ***
- - **三、建模**
+## 三、建模
 
 话不多说，直接上代码hhh
 ```python
@@ -421,17 +423,17 @@ OK，可以进行建模了！！！
 from sklearn.linear_model import Ridge,RidgeCV,ElasticNet,LassoCV,LassoLarsCV
 from sklearn.model_selection import cross_val_score
 # 7.1 k折交叉验证，验证模型准确率或泛化误差
-n_folds = 5 # 设置5折交叉
+n_folds = 10 # 一般设置10折交叉验证
 def rmsle_cv(model):
-    rmse = np.sqrt(-cross_val_score(model, trainData, y_train, scoring='neg_mean_squared_error', cv=n_folds)) # scoring表示评分形式，这里使用均方误差
-    return rmse  # 返回的是评分
-# 导入岭回归模型
+    rmse = np.sqrt(-cross_val_score(model, trainData, y_train, scoring='neg_mean_squared_error', cv=n_folds)) # scoring表示模型评分方式，这里使用均方误差
+    return rmse  # 返回的是误差分数
+# 7.2 导入岭回归模型(调节参数)
 model_ridge = Ridge()
 alphas = [0.05, 0.1, 0.3, 1, 3, 5, 10, 15, 30, 50, 75] # 参数alphas，控制正则项的强弱（防止过拟合和欠拟合）
-# 每调节一次alphas，计算一次模型误差的均值（5折交叉验证）
+# 每调节一次alphas，计算一次模型误差的均值
 cv_ridge = [rmsle_cv(Ridge(alpha=alpha)).mean()
             for alpha in alphas]
-# 可视化看看模型误差
+# 可视化看看模型误差随参数变化的值
 cv_ridge = pd.Series(cv_ridge, index=alphas)  # 将原本是列表的cv_ridge转化为数组形式展现，索引是alphas
 cv_ridge.plot(title='Validation Score')
 plt.xlabel("alpha")
@@ -439,31 +441,39 @@ plt.ylabel("rmse")
 plt.grid()
 plt.show()
 ```
-![在这里插入图片描述](https://img-blog.csdnimg.cn/20200515230822663.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0Ffemh1b18=,size_16,color_FFFFFF,t_70)
+![10折交叉验证可视化](https://img-blog.csdnimg.cn/20200516101219188.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0Ffemh1b18=,size_16,color_FFFFFF,t_70)
 
 再看看具体的误差值：
 ```python
 print(cv_ridge)
 ```
-![在这里插入图片描述](https://img-blog.csdnimg.cn/20200515231217616.png)
+![10折交叉验证的alphas-均方误差](https://img-blog.csdnimg.cn/20200516101032880.png)
 
-很明显，alpha=15时，模型误差最小，OK，我们使用alpha=15拟合模型吧：
+很明显，alpha=10时，模型误差最小。
+
+OK，我们使用alpha=10拟合模型吧：
 ```python
 # 7.3 拟合模型
-clf = Ridge(alpha=15)
+clf = Ridge(alpha=10)
 clf.fit(trainData,y_train)
 ```
-![在这里插入图片描述](https://img-blog.csdnimg.cn/202005152317502.png)
+![alphas=10拟合模型](https://img-blog.csdnimg.cn/2020051610351447.png)
 
-可以进行预测了：
+可以进行预测了！
+
+## 四、预测
 ```python
 # 7.4 预测
 predict = clf.predict(testData)
-testData1 = testData  # 打算将预测结果存进一个新表中testData1
-testData1['SalePrice_Predict'] = predict
-print(testData1.head())
+# testData1 = testData  # （1）新建了一个和原表相同的表，并将预测值增加到最后一列
+# testData1['SalePrice_Predict'] = predict
+# print(testData1.head())
+sub = pd.DataFrame()  # （2）或者只将原表的Id记录下来新建一个表，将预测值增加到最后一列
+sub['Id'] = test_ID
+sub['SalePrice'] = predict
+print(sub.head(10))
 ```
 结果：<br>
-![在这里插入图片描述](https://img-blog.csdnimg.cn/20200515233807884.png)
+![预测结果](https://img-blog.csdnimg.cn/20200516103646432.png)
 
 预测结束！
