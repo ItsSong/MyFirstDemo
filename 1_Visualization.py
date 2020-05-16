@@ -1,5 +1,3 @@
-# ------------目的：数据可视化探索-----------------
-
 # 所需的工具包放在最前边
 import pandas as pd
 import seaborn as sns  # 画热力图、箱线图等(画图使用：在matplot的基础上进行了进一步封装）
@@ -12,6 +10,8 @@ from sklearn.preprocessing import LabelEncoder
 # 1.先查看一下数据的格式----------------------------------------------------------------------------
 trainData = pd.read_csv('train.csv')
 testData = pd.read_csv('test.csv')
+train_ID = trainData['Id']
+test_ID = testData['Id']
 print("Train data:")
 print(trainData.head(5))
 print("Test data:")
@@ -211,18 +211,19 @@ testData = all_data[n_trainData:]
 # 7. 建模------------------------------------------------------------------------
 from sklearn.linear_model import Ridge,RidgeCV,ElasticNet,LassoCV,LassoLarsCV
 from sklearn.model_selection import cross_val_score
+from sklearn.metrics import accuracy_score
 # 7.1 k折交叉验证，验证模型准确率或泛化误差
-n_folds = 5 # 设置5折交叉
+n_folds = 10 # 一般设置10折交叉验证
 def rmsle_cv(model):
-    rmse = np.sqrt(-cross_val_score(model, trainData, y_train, scoring='neg_mean_squared_error', cv=n_folds)) # scoring表示评分形式，这里使用均方误差
-    return rmse  # 返回的是评分
+    rmse = np.sqrt(-cross_val_score(model, trainData, y_train, scoring='neg_mean_squared_error', cv=n_folds)) # scoring表示模型评分方式，这里使用均方误差
+    return rmse  # 返回的是误差分数
 # 7.2 导入岭回归模型(调节参数)
 model_ridge = Ridge()
 alphas = [0.05, 0.1, 0.3, 1, 3, 5, 10, 15, 30, 50, 75] # 参数alphas，控制正则项的强弱（防止过拟合和欠拟合）
-# 每调节一次alphas，计算一次模型误差的均值（5折交叉验证）
+# 每调节一次alphas，计算一次模型误差的均值
 cv_ridge = [rmsle_cv(Ridge(alpha=alpha)).mean()
             for alpha in alphas]
-# 可视化看看模型误差
+# 可视化看看模型误差随参数变化的值
 cv_ridge = pd.Series(cv_ridge, index=alphas)  # 将原本是列表的cv_ridge转化为数组形式展现，索引是alphas
 cv_ridge.plot(title='Validation Score')
 plt.xlabel("alpha")
@@ -231,10 +232,14 @@ plt.grid()
 plt.show()
 print(cv_ridge)
 # 7.3 拟合模型
-clf = Ridge(alpha=15)
+clf = Ridge(alpha=10)
 clf.fit(trainData,y_train)
 # 7.4 预测
 predict = clf.predict(testData)
-testData1 = testData
-testData1['SalePrice_Predict'] = predict
-print(testData1.head())
+# testData1 = testData  # （1）新建了一个和原表相同的表，并将预测值增加到最后一列
+# testData1['SalePrice_Predict'] = predict
+# print(testData1.head())
+sub = pd.DataFrame()  # （2）或者只将原表的Id记录下来新建一个表，将预测值增加到最后一列
+sub['Id'] = test_ID
+sub['SalePrice'] = predict
+print(sub.head(10))
